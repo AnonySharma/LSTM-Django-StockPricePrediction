@@ -14,6 +14,8 @@ import csv
 from .models import *
 from plotly.offline import plot
 import plotly.graph_objects as go
+from sklearn.metrics import mean_squared_error 
+import math
 
 # Create your views here.
 
@@ -43,9 +45,9 @@ def makemodel(s_type):
 
     final_dataset = new_dataset.values
 
-    t = int(0.85 * len(final_dataset))
-    train_data = final_dataset[0:100, :]
-    valid_data = final_dataset[100:, :]
+    t = int(0.7 * len(final_dataset))
+    train_data = final_dataset[0:t, :]
+    valid_data = final_dataset[t:, :]
 
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(final_dataset)
@@ -87,8 +89,8 @@ def makemodel(s_type):
 
     lstm_model.save("saved_model.h5")
 
-    train_data = new_dataset[:100]
-    valid_data = new_dataset[100:]
+    train_data = new_dataset[:t]
+    valid_data = new_dataset[t:]
     valid_data["Predictions"] = closing_price
     # plt.plot(train_data["Close"])
     # plt.plot(valid_data[['Close',"Predictions"]])
@@ -126,6 +128,8 @@ def drawgraph(s_type):
     data = df_nse.sort_index(ascending=True, axis=0)
     new_data = pd.DataFrame(index=range(0, len(df_nse)), columns=["Date", s_type])
 
+    t = int(0.7 * len(df_nse))
+
     for i in range(0, len(data)):
         new_data["Date"][i] = data["Date"][i]
         new_data[s_type][i] = data[s_type][i]
@@ -135,8 +139,8 @@ def drawgraph(s_type):
 
     dataset = new_data.values
 
-    train = dataset[0:100, :]
-    valid = dataset[100:, :]
+    train = dataset[0:t, :]
+    valid = dataset[t:, :]
 
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(dataset)
@@ -166,8 +170,8 @@ def drawgraph(s_type):
     closing_price = model.predict(X_test)
     closing_price = scaler.inverse_transform(closing_price)
 
-    train = new_data[:100]
-    valid = new_data[100:]
+    train = new_data[:t]
+    valid = new_data[t:]
     valid["Predictions"] = closing_price
     # plt.clf()
     # plt.title('Model')
@@ -234,6 +238,12 @@ def graph(request, pk, s_type):
         go.Line(x=valid.index, y=valid["Predictions"], mode="lines", name="Predictions")
     )
 
+    
+    realVals = valid[s_type]
+    predictedVals = valid['Predictions']
+    mse = mean_squared_error(realVals, predictedVals)
+    rmse = math.sqrt(mse)
+
     # Setting layout of the figure.
     layout = {
         "title": "Stock Price Prediction",
@@ -244,4 +254,4 @@ def graph(request, pk, s_type):
     # Getting HTML needed to render the plot.
     plot_div = plot({"data": graphs, "layout": layout}, output_type="div")
 
-    return render(request, "graph.html", context={"plot_div": plot_div})
+    return render(request, "graph.html", context={"plot_div": plot_div,'rmse':rmse})
