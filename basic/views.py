@@ -259,7 +259,13 @@ def graph(request, pk, s_type):
     # Setting layout of the figure.
     layout = {
         "title": {
-            "text": "Root-mean square error: " + str(rmse),
+            "text": "<a href='/' class='badge badge-success' target='_self'>Goto Home</a>"
+            + "<br><b>"
+            + stock.name
+            + "</b><br>"
+            + "Root-mean square error: <i>"
+            + str(rmse)
+            + "</i>",
             "y": 0.95,
             "x": 0.5,
             "xanchor": "center",
