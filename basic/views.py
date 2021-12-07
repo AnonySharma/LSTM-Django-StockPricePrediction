@@ -217,8 +217,8 @@ def pickdate(request, pk, s_type):
 def graph(request, pk, s_type):
     data = request.GET
     stock = MyStock.objects.get(id=pk)
-    startdate = data.get("startdate")
-    enddate = data.get("enddate")
+    startdate = data.get("start_date")
+    enddate = data.get("end_date")
     getdata(stock.symbol, startdate, enddate)
     makemodel(s_type)
     valid = drawgraph(s_type)
