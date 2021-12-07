@@ -14,7 +14,7 @@ import csv
 from .models import *
 from plotly.offline import plot
 import plotly.graph_objects as go
-from sklearn.metrics import mean_squared_error 
+from sklearn.metrics import mean_squared_error
 import math
 
 # Create your views here.
@@ -182,7 +182,7 @@ def drawgraph(s_type):
     # plt.legend([ 'Close', 'Predictions'], loc='lower right')
     # plt.savefig('plot')
 
-    return [valid,train]
+    return [valid, train]
 
 
 def addstocks():
@@ -225,7 +225,7 @@ def graph(request, pk, s_type):
     enddate = data.get("end_date")
     getdata(stock.symbol, startdate, enddate)
     makemodel(s_type)
-    valid,train = drawgraph(s_type)
+    valid, train = drawgraph(s_type)
     graphs = []
 
     graphs = []
@@ -233,14 +233,15 @@ def graph(request, pk, s_type):
     # Adding linear plot of y1 vs. x.
 
     graphs.append(go.Line(x=valid.index, y=valid[s_type], mode="lines", name=s_type))
-    graphs.append(go.Line(x=train.index, y=train[s_type], mode="lines", name="Training Data"))
+    graphs.append(
+        go.Line(x=train.index, y=train[s_type], mode="lines", name="Training Data")
+    )
     graphs.append(
         go.Line(x=valid.index, y=valid["Predictions"], mode="lines", name="Predictions")
     )
 
-    
     realVals = valid[s_type]
-    predictedVals = valid['Predictions']
+    predictedVals = valid["Predictions"]
     mse = mean_squared_error(realVals, predictedVals)
     rmse = math.sqrt(mse)
 
@@ -249,9 +250,10 @@ def graph(request, pk, s_type):
         "title": "Stock Price Prediction",
         "xaxis_title": "Date",
         "yaxis_title": "Stock Price in USD",
+        "hovermode": "x",
     }
 
     # Getting HTML needed to render the plot.
     plot_div = plot({"data": graphs, "layout": layout}, output_type="div")
 
-    return render(request, "graph.html", context={"plot_div": plot_div,'rmse':rmse})
+    return render(request, "graph.html", context={"plot_div": plot_div, "rmse": rmse})
