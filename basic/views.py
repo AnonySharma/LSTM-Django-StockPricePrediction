@@ -232,22 +232,39 @@ def graph(request, pk, s_type):
     print(valid)
     # Adding linear plot of y1 vs. x.
 
-    graphs.append(go.Line(x=valid.index, y=valid[s_type], mode="lines", name=s_type))
     graphs.append(
-        go.Line(x=train.index, y=train[s_type], mode="lines", name="Training Data")
+        go.Line(
+            x=valid.index, y=valid[s_type], mode="lines", name=s_type + " (Test data)"
+        )
     )
     graphs.append(
-        go.Line(x=valid.index, y=valid["Predictions"], mode="lines", name="Predictions")
+        go.Line(
+            x=train.index, y=train[s_type], mode="lines", name=s_type + " (Train data)"
+        )
+    )
+    graphs.append(
+        go.Line(
+            x=valid.index,
+            y=valid["Predictions"],
+            mode="lines",
+            name=s_type + " (Predictions)",
+        )
     )
 
     realVals = valid[s_type]
     predictedVals = valid["Predictions"]
     mse = mean_squared_error(realVals, predictedVals)
-    rmse = math.sqrt(mse)
+    rmse = round(math.sqrt(mse), 2)
 
     # Setting layout of the figure.
     layout = {
-        "title": "Stock Price Prediction",
+        "title": {
+            "text": "Root-mean square error: " + str(rmse),
+            "y": 0.95,
+            "x": 0.5,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
         "xaxis_title": "Date",
         "yaxis_title": "Stock Price in USD",
         "hovermode": "x",
@@ -256,4 +273,4 @@ def graph(request, pk, s_type):
     # Getting HTML needed to render the plot.
     plot_div = plot({"data": graphs, "layout": layout}, output_type="div")
 
-    return render(request, "graph.html", context={"plot_div": plot_div, "rmse": rmse})
+    return render(request, "graph.html", context={"plot_div": plot_div})
