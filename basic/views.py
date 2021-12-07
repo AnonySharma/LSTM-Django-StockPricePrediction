@@ -44,8 +44,8 @@ def makemodel(s_type):
     final_dataset = new_dataset.values
 
     t = int(0.85 * len(final_dataset))
-    train_data = final_dataset[0:70, :]
-    valid_data = final_dataset[70:, :]
+    train_data = final_dataset[0:100, :]
+    valid_data = final_dataset[100:, :]
 
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(final_dataset)
@@ -87,8 +87,8 @@ def makemodel(s_type):
 
     lstm_model.save("saved_model.h5")
 
-    train_data = new_dataset[:70]
-    valid_data = new_dataset[70:]
+    train_data = new_dataset[:100]
+    valid_data = new_dataset[100:]
     valid_data["Predictions"] = closing_price
     # plt.plot(train_data["Close"])
     # plt.plot(valid_data[['Close',"Predictions"]])
@@ -135,8 +135,8 @@ def drawgraph(s_type):
 
     dataset = new_data.values
 
-    train = dataset[0:70, :]
-    valid = dataset[70:, :]
+    train = dataset[0:100, :]
+    valid = dataset[100:, :]
 
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(dataset)
@@ -166,8 +166,8 @@ def drawgraph(s_type):
     closing_price = model.predict(X_test)
     closing_price = scaler.inverse_transform(closing_price)
 
-    train = new_data[:70]
-    valid = new_data[70:]
+    train = new_data[:100]
+    valid = new_data[100:]
     valid["Predictions"] = closing_price
     # plt.clf()
     # plt.title('Model')
@@ -178,7 +178,7 @@ def drawgraph(s_type):
     # plt.legend([ 'Close', 'Predictions'], loc='lower right')
     # plt.savefig('plot')
 
-    return valid
+    return [valid,train]
 
 
 def addstocks():
@@ -221,7 +221,7 @@ def graph(request, pk, s_type):
     enddate = data.get("end_date")
     getdata(stock.symbol, startdate, enddate)
     makemodel(s_type)
-    valid = drawgraph(s_type)
+    valid,train = drawgraph(s_type)
     graphs = []
 
     graphs = []
@@ -229,7 +229,7 @@ def graph(request, pk, s_type):
     # Adding linear plot of y1 vs. x.
 
     graphs.append(go.Line(x=valid.index, y=valid[s_type], mode="lines", name=s_type))
-
+    graphs.append(go.Line(x=train.index, y=train[s_type], mode="lines", name="Training Data"))
     graphs.append(
         go.Line(x=valid.index, y=valid["Predictions"], mode="lines", name="Predictions")
     )
